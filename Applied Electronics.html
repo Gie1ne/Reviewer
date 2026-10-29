@@ -1,0 +1,1684 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Applied Electricity - Interactive Exam Reviewer</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts: Orbitron & Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            cyberDark: '#0a0f1d',
+            cyberCard: '#111827',
+            cyberBorder: '#1e293b',
+            neonBlue: '#00f3ff',
+            neonAmber: '#ffb700',
+            neonGreen: '#00ff88',
+            neonRed: '#ff3366',
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            tech: ['Orbitron', 'sans-serif'],
+          },
+          boxShadow: {
+            'neon-blue': '0 0 15px rgba(0, 243, 255, 0.35)',
+            'neon-green': '0 0 15px rgba(0, 255, 136, 0.35)',
+            'neon-amber': '0 0 15px rgba(255, 183, 0, 0.35)',
+            'neon-red': '0 0 15px rgba(255, 51, 102, 0.35)',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #0a0f1d;
+      color: #e2e8f0;
+      overflow-x: hidden;
+    }
+    .grid-bg {
+      background-image: linear-gradient(to right, rgba(0, 243, 255, 0.05) 1px, transparent 1px),
+                        linear-gradient(to bottom, rgba(0, 243, 255, 0.05) 1px, transparent 1px);
+      background-size: 30px 30px;
+    }
+    .cyber-glow {
+      text-shadow: 0 0 8px rgba(0, 243, 255, 0.6);
+    }
+    .amber-glow {
+      text-shadow: 0 0 8px rgba(255, 183, 0, 0.6);
+    }
+    .green-glow {
+      text-shadow: 0 0 8px rgba(0, 255, 136, 0.6);
+    }
+    .red-glow {
+      text-shadow: 0 0 8px rgba(255, 51, 102, 0.6);
+    }
+    .perspective-1000 {
+      perspective: 1000px;
+    }
+    .transform-style-3d {
+      transform-style: preserve-3d;
+    }
+  <!-- CSS Styles -->
+  <style>
+    body {
+      background-color: #0a0f1d;
+      color: #e2e8f0;
+      overflow-x: hidden;
+    }
+    .grid-bg {
+      background-image: linear-gradient(to right, rgba(0, 243, 255, 0.05) 1px, transparent 1px),
+                        linear-gradient(to bottom, rgba(0, 243, 255, 0.05) 1px, transparent 1px);
+      background-size: 30px 30px;
+    }
+    .cyber-glow {
+      text-shadow: 0 0 8px rgba(0, 243, 255, 0.6);
+    }
+    /* Hotspot animation */
+    @keyframes pulse-ring {
+      0% { transform: scale(0.95); opacity: 0.8; }
+      50% { transform: scale(1.25); opacity: 0.4; }
+      100% { transform: scale(0.95); opacity: 0.8; }
+    }
+    .hotspot-ring {
+      animation: pulse-ring 2s infinite ease-in-out;
+    }
+    @keyframes target-bounce {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-6px); }
+    }
+    .animate-target-bounce {
+      animation: target-bounce 1.5s infinite ease-in-out;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col font-sans selection:bg-neonBlue selection:text-black">
+
+  <!-- TOP HEADER CANVAS ANIMATION -->
+  <header class="relative bg-cyberCard/80 border-b border-cyberBorder backdrop-blur-md sticky top-0 z-40">
+    <canvas id="electricCanvas" class="absolute inset-0 w-full h-full pointer-events-none opacity-40"></canvas>
+    
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 relative z-10 flex flex-col md:flex-row items-center justify-between gap-4">
+      <!-- Logo & Title -->
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-lg bg-black/60 border border-neonBlue flex items-center justify-center text-neonBlue shadow-neon-blue">
+          <i class="fa-solid fa-bolt text-xl animate-pulse"></i>
+        </div>
+        <div>
+          <h1 class="font-tech text-lg md:text-xl font-bold tracking-wider text-white flex items-center gap-2">
+            APPLIED ELECTRICITY <span class="text-xs px-2 py-0.5 rounded bg-neonBlue/10 border border-neonBlue text-neonBlue font-mono">EXAM REVIEWER v2.0</span>
+          </h1>
+          <p class="text-xs text-gray-400">Master 20 Electronic Devices & Analog Multimeter Diagnostics</p>
+        </div>
+      </div>
+
+      <!-- Controls & Sound Toggle -->
+      <div class="flex items-center gap-3">
+        <button id="soundToggleBtn" onclick="toggleSound()" class="px-3 py-1.5 rounded-lg bg-cyberDark border border-cyberBorder hover:border-neonBlue text-xs font-mono text-gray-300 hover:text-neonBlue transition-all flex items-center gap-2">
+          <i id="soundIcon" class="fa-solid fa-volume-high text-neonGreen"></i>
+          <span id="soundLabel">SYNTH AUDIO: ON</span>
+        </button>
+        <div class="text-xs font-mono bg-black/40 px-3 py-1.5 rounded-lg border border-cyberBorder text-neonAmber flex items-center gap-2">
+          <i class="fa-solid fa-microchip"></i>
+          <span>MODULES: 5 LOADED</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab Navigation Bar -->
+    <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex overflow-x-auto gap-2 py-2 border-t border-cyberBorder/50 no-scrollbar">
+      <button onclick="switchTab('explorer')" id="tab-explorer" class="nav-tab px-4 py-2 rounded-lg text-xs md:text-sm font-tech font-semibold flex items-center gap-2 whitespace-nowrap transition-all bg-neonBlue/10 text-neonBlue border border-neonBlue shadow-neon-blue">
+        <i class="fa-solid fa-boxes-stacked"></i> 1. Component Explorer
+      </button>
+      <button onclick="switchTab('multimeter')" id="tab-multimeter" class="nav-tab px-4 py-2 rounded-lg text-xs md:text-sm font-tech font-semibold flex items-center gap-2 whitespace-nowrap transition-all text-gray-400 hover:text-white border border-transparent hover:border-cyberBorder">
+        <i class="fa-solid fa-gauge-high"></i> 2. Multimeter Teardown
+      </button>
+      <button onclick="switchTab('pictureQuiz')" id="tab-pictureQuiz" class="nav-tab px-4 py-2 rounded-lg text-xs md:text-sm font-tech font-semibold flex items-center gap-2 whitespace-nowrap transition-all text-gray-400 hover:text-white border border-transparent hover:border-cyberBorder">
+        <i class="fa-solid fa-eye"></i> 3. Visual Identification Quiz
+      </button>
+      <button onclick="switchTab('exam')" id="tab-exam" class="nav-tab px-4 py-2 rounded-lg text-xs md:text-sm font-tech font-semibold flex items-center gap-2 whitespace-nowrap transition-all text-gray-400 hover:text-white border border-transparent hover:border-cyberBorder">
+        <i class="fa-solid fa-graduation-cap"></i> 4. Master Assessment
+      </button>
+      <button onclick="switchTab('matching')" id="tab-matching" class="nav-tab px-4 py-2 rounded-lg text-xs md:text-sm font-tech font-semibold flex items-center gap-2 whitespace-nowrap transition-all text-gray-400 hover:text-white border border-transparent hover:border-cyberBorder">
+        <i class="fa-solid fa-puzzle-piece"></i> 5. Circuit Wire Match
+      </button>
+    </nav>
+  </header>
+
+  <!-- MAIN CONTENT CONTAINER -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 grid-bg">
+
+    <!-- ========================================== -->
+    <!-- MODULE 1: COMPONENT EXPLORER & FLASHCARDS -->
+    <!-- ========================================== -->
+    <section id="mod-explorer" class="tab-content space-y-6">
+      <!-- Search & Filters -->
+      <div class="bg-cyberCard p-4 rounded-xl border border-cyberBorder flex flex-col md:flex-row items-center justify-between gap-4">
+        <div class="relative w-full md:w-96">
+          <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+          <input type="text" id="searchInput" oninput="filterComponents()" placeholder="Search components, functions, or terms..." class="w-full bg-black/50 border border-cyberBorder focus:border-neonBlue rounded-lg pl-10 pr-4 py-2 text-sm text-white placeholder-gray-500 outline-none transition-all">
+        </div>
+
+        <!-- Filter Categories -->
+        <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
+          <button onclick="setFilter('all')" id="filter-all" class="filter-btn text-xs font-mono px-3 py-1.5 rounded-md bg-neonBlue/20 text-neonBlue border border-neonBlue">ALL (34)</button>
+          <button onclick="setFilter('control')" id="filter-control" class="filter-btn text-xs font-mono px-3 py-1.5 rounded-md bg-cyberDark text-gray-400 border border-cyberBorder hover:border-neonBlue">Controls & Safety</button>
+          <button onclick="setFilter('power')" id="filter-power" class="filter-btn text-xs font-mono px-3 py-1.5 rounded-md bg-cyberDark text-gray-400 border border-cyberBorder hover:border-neonBlue">Power & Loads</button>
+          <button onclick="setFilter('meter')" id="filter-meter" class="filter-btn text-xs font-mono px-3 py-1.5 rounded-md bg-cyberDark text-gray-400 border border-cyberBorder hover:border-neonBlue">Multimeter Parts</button>
+          <button onclick="setFilter('wiring')" id="filter-wiring" class="filter-btn text-xs font-mono px-3 py-1.5 rounded-md bg-cyberDark text-gray-400 border border-cyberBorder hover:border-neonBlue">Wiring & Interconnects</button>
+        </div>
+
+        <!-- View Mode Switcher -->
+        <div class="flex items-center gap-1 bg-black/40 p-1 rounded-lg border border-cyberBorder self-end md:self-auto">
+          <button onclick="setViewMode('grid')" id="view-grid" class="px-2.5 py-1 rounded text-xs text-neonBlue bg-cyberBorder"><i class="fa-solid fa-border-all"></i> Cards</button>
+          <button onclick="setViewMode('list')" id="view-list" class="px-2.5 py-1 rounded text-xs text-gray-400 hover:text-white"><i class="fa-solid fa-list"></i> Table</button>
+        </div>
+      </div>
+
+      <!-- Component Cards Grid Container -->
+      <div id="componentGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <!-- Dynamic Cards Inserted Here -->
+      </div>
+
+      <!-- List View Container (Hidden by default) -->
+      <div id="componentList" class="hidden bg-cyberCard rounded-xl border border-cyberBorder overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm text-gray-300">
+            <thead class="bg-black/60 text-xs font-tech text-neonBlue uppercase border-b border-cyberBorder">
+              <tr>
+                <th class="p-3">Graphic</th>
+                <th class="p-3">Name / Alias</th>
+                <th class="p-3">Category</th>
+                <th class="p-3">Core Function & Operational Rules</th>
+                <th class="p-3 text-right">Inspect</th>
+              </tr>
+            </thead>
+            <tbody id="componentTableBody" class="divide-y divide-cyberBorder/50">
+              <!-- Dynamic Rows Inserted Here -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- MODULE 2: MULTIMETER INTERACTIVE INSPECTOR -->
+    <!-- ========================================== -->
+    <section id="mod-multimeter" class="tab-content hidden space-y-6">
+      <div class="bg-cyberCard p-4 rounded-xl border border-cyberBorder flex flex-col lg:flex-row items-center justify-between gap-4">
+        <div>
+          <h2 class="font-tech text-lg text-neonBlue font-bold flex items-center gap-2">
+            <i class="fa-solid fa-microchip"></i> SANWA ANALOG MULTIMETER (VOM) TEARDOWN
+          </h2>
+          <p class="text-xs text-gray-400">Click any highlighted hotspot pin on the diagram below to inspect parts, rules, and functions.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="startMultimeterTour()" class="px-3 py-1.5 rounded-lg bg-neonBlue/10 text-neonBlue border border-neonBlue hover:bg-neonBlue/20 text-xs font-tech transition-all flex items-center gap-2">
+            <i class="fa-solid fa-play"></i> Guided Inspection Tour
+          </button>
+          <span id="multimeterStepIndicator" class="text-xs font-mono bg-black/40 px-3 py-1.5 rounded-lg border border-cyberBorder text-neonAmber">Part 1 / 14</span>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Interactive Sanwa Multimeter Visual (SVG) -->
+        <div class="lg:col-span-7 bg-black/60 p-4 rounded-xl border border-cyberBorder flex flex-col items-center justify-center relative min-h-[450px]">
+          
+          <!-- Sanwa Multimeter Interactive SVG Diagram -->
+          <div class="relative w-full max-w-[480px]">
+            <svg id="sanwaSvg" viewBox="0 0 500 650" class="w-full h-auto drop-shadow-[0_0_15px_rgba(0,0,0,0.8)]">
+              <!-- Main Outer Body Panel -->
+              <rect x="40" y="20" width="420" height="600" rx="25" fill="#181e29" stroke="#334155" stroke-width="4"/>
+              <rect x="50" y="30" width="400" height="580" rx="20" fill="#0f172a" stroke="#1e293b" stroke-width="2"/>
+              
+              <!-- Top Brand Logo -->
+              <text x="250" y="65" font-family="Orbitron" font-weight="bold" font-size="22" fill="#ff3366" text-anchor="middle">sanwa</text>
+              
+              <!-- Meter Scale Window Box -->
+              <rect x="70" y="80" width="360" height="200" rx="10" fill="#f8fafc" stroke="#475569" stroke-width="3"/>
+              
+              <!-- Scale Arch Lines -->
+              <path d="M 100,240 A 180,180 0 0,1 400,240" fill="none" stroke="#0f172a" stroke-width="2.5"/>
+              <path d="M 110,225 A 165,165 0 0,1 390,225" fill="none" stroke="#dc2626" stroke-width="2" stroke-dasharray="4,2"/>
+              <path d="M 120,210 A 150,150 0 0,1 380,210" fill="none" stroke="#2563eb" stroke-width="2"/>
+              
+              <!-- Scale Labels -->
+              <text x="90" y="255" font-family="Inter" font-weight="bold" font-size="11" fill="#0f172a">Ω ∞</text>
+              <text x="400" y="255" font-family="Inter" font-weight="bold" font-size="11" fill="#0f172a">0 Ω</text>
+              <text x="100" y="185" font-family="Inter" font-weight="bold" font-size="10" fill="#dc2626">ACV/DCV</text>
+              
+              <!-- Mirror Strip (Hotspot 4) -->
+              <path id="svg-mirror" d="M 140,218 A 130,130 0 0,1 360,218" fill="none" stroke="#94a3b8" stroke-width="8" opacity="0.8"/>
+              <path d="M 140,218 A 130,130 0 0,1 360,218" fill="none" stroke="#e2e8f0" stroke-width="2"/>
+              
+              <!-- Zero Mechanical Position Adjuster Screw (Hotspot 5) -->
+              <circle cx="250" cy="262" r="14" fill="#334155" stroke="#64748b" stroke-width="2"/>
+              <line x1="242" y1="262" x2="258" y2="262" stroke="#cbd5e1" stroke-width="3"/>
+
+              <!-- Moving Pointer Needle (Hotspot 3) -->
+              <line id="svg-pointer" x1="250" y1="262" x2="180" y2="105" stroke="#dc2626" stroke-width="2.5" stroke-linecap="round"/>
+              <circle cx="250" cy="262" r="4" fill="#dc2626"/>
+
+              <!-- Lower Controls Area -->
+              <!-- Range Selector Switch Dial (Hotspot 7) -->
+              <circle cx="250" cy="420" r="75" fill="#0f172a" stroke="#334155" stroke-width="4"/>
+              <circle cx="250" cy="420" r="60" fill="#1e293b" stroke="#475569" stroke-width="2"/>
+              <rect x="242" y="360" width="16" height="70" rx="4" fill="#f8fafc" stroke="#94a3b8" stroke-width="1"/>
+              
+              <!-- Selector Markings -->
+              <!-- DCV Zone (Hotspot 8) -->
+              <text x="140" y="360" font-family="Orbitron" font-weight="bold" font-size="12" fill="#38bdf8">DCV</text>
+              <!-- ACV Zone (Hotspot 9) -->
+              <text x="330" y="360" font-family="Orbitron" font-weight="bold" font-size="12" fill="#f43f5e">ACV</text>
+              <!-- DCA Zone (Hotspot 10) -->
+              <text x="140" y="490" font-family="Orbitron" font-weight="bold" font-size="12" fill="#38bdf8">DCA</text>
+              <!-- Ohmmeter Zone (Hotspot 11) -->
+              <text x="330" y="490" font-family="Orbitron" font-weight="bold" font-size="12" fill="#facc15">OHM Ω</text>
+              <text x="250" y="520" font-family="Orbitron" font-weight="bold" font-size="12" fill="#ef4444">OFF</text>
+
+              <!-- Zero-Ohm Position Adjuster Knob (Hotspot 6) -->
+              <circle cx="410" cy="330" r="20" fill="#1e293b" stroke="#00f3ff" stroke-width="2"/>
+              <circle cx="410" cy="330" r="14" fill="#334155"/>
+
+              <!-- Input Terminals / Probes (Hotspots 12, 13, 14) -->
+              <!-- Red Lead -->
+              <path d="M 390,560 Q 420,580 430,640" fill="none" stroke="#ef4444" stroke-width="8" stroke-linecap="round"/>
+              <rect x="420" y="580" width="16" height="40" rx="3" fill="#dc2626"/> <!-- Finger Guard -->
+              <path d="M 428,620 L 428,645" stroke="#cbd5e1" stroke-width="3"/> <!-- Test Pin -->
+
+              <!-- Black Lead -->
+              <path d="M 110,560 Q 80,580 70,640" fill="none" stroke="#334155" stroke-width="8" stroke-linecap="round"/>
+              <rect x="62" y="580" width="16" height="40" rx="3" fill="#1e293b"/> <!-- Finger Guard -->
+              <path d="M 70,620 L 70,645" stroke="#cbd5e1" stroke-width="3"/> <!-- Test Pin -->
+
+              <!-- CLICKABLE HOTSPOT OVERLAYS -->
+              <g id="hotspotsGroup">
+                <!-- Hotspots dynamically populated by JS -->
+              </g>
+
+              <!-- ACTIVE INSPECTOR ARROW OVERLAY -->
+              <g id="activeMultimeterArrow">
+                <!-- Dynamic highlighted arrow inserted when clicking hotspot -->
+              </g>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Detail Inspector Panel -->
+        <div class="lg:col-span-5 bg-cyberCard p-6 rounded-xl border border-cyberBorder flex flex-col justify-between space-y-4">
+          <div>
+            <div class="flex items-center justify-between border-b border-cyberBorder pb-3">
+              <span id="inspectNumber" class="px-2.5 py-1 rounded bg-neonBlue/10 border border-neonBlue text-neonBlue font-tech text-xs font-bold">PART #1</span>
+              <span id="inspectCategory" class="text-xs font-mono text-neonAmber">MULTIMETER COMPONENT</span>
+            </div>
+
+            <h3 id="inspectTitle" class="text-xl font-tech font-bold text-white mt-3 flex items-center gap-2">
+              Panel (Body Enclosure)
+            </h3>
+            <p id="inspectAlias" class="text-xs font-mono text-gray-400 mt-0.5">Primary Enclosure & Protective Housing</p>
+
+            <div class="mt-4 p-4 rounded-lg bg-black/40 border border-cyberBorder space-y-3">
+              <div>
+                <h4 class="text-xs font-tech text-neonBlue uppercase tracking-wider">Core Description & Function</h4>
+                <p id="inspectDesc" class="text-sm text-gray-300 mt-1 leading-relaxed">
+                  The hard body enclosure that protects internal circuitry and provides a stable housing for measurements.
+                </p>
+              </div>
+
+              <div id="inspectRuleBox" class="p-3 rounded bg-neonAmber/10 border border-neonAmber/30 text-xs text-neonAmber space-y-1">
+                <div class="font-bold font-tech flex items-center gap-1.5">
+                  <i class="fa-solid fa-triangle-exclamation"></i> OPERATIONAL RULE / CLINICAL NOTE
+                </div>
+                <p id="inspectRule">Ensure the body panel is clean and free of moisture or fractures to maintain dielectric safety during high-voltage tests.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Interactive Action Buttons -->
+          <div class="pt-4 border-t border-cyberBorder flex items-center justify-between gap-3">
+            <button onclick="prevMultimeterPart()" class="px-4 py-2 rounded-lg bg-cyberDark border border-cyberBorder hover:border-neonBlue text-xs font-tech text-white transition-all">
+              <i class="fa-solid fa-arrow-left"></i> Previous Part
+            </button>
+            <button onclick="nextMultimeterPart()" class="px-4 py-2 rounded-lg bg-neonBlue text-black font-tech font-bold text-xs hover:bg-cyan-300 transition-all shadow-neon-blue">
+              Next Part <i class="fa-solid fa-arrow-right"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- MODULE 3: VISUAL PICTURE IDENTIFICATION QUIZ -->
+    <!-- ========================================== -->
+    <section id="mod-pictureQuiz" class="tab-content hidden space-y-6">
+      <div class="max-w-3xl mx-auto bg-cyberCard p-6 rounded-xl border border-cyberBorder space-y-6">
+        
+        <div class="flex items-center justify-between border-b border-cyberBorder pb-4">
+          <div>
+            <h2 class="font-tech text-lg text-neonBlue font-bold flex items-center gap-2">
+              <i class="fa-solid fa-eye"></i> VISUAL IDENTIFICATION FLASH-QUIZ
+            </h2>
+            <p class="text-xs text-gray-400">Examine the schematic / physical vector graphic and choose the correct device or function.</p>
+          </div>
+          <div class="text-right">
+            <div class="text-xs font-mono text-gray-400">SCORE STREAK</div>
+            <div id="pQuizStreak" class="font-tech text-xl text-neonGreen font-bold">0</div>
+          </div>
+        </div>
+
+        <!-- Visual Display Card -->
+        <div class="bg-black/60 p-6 rounded-xl border border-cyberBorder flex flex-col items-center justify-center min-h-[220px] relative">
+          <div id="pQuizVisualContainer" class="w-48 h-48 flex items-center justify-center text-neonBlue">
+            <!-- SVG Image Rendered via JS -->
+          </div>
+          <div id="pQuizBadge" class="absolute top-3 left-3 text-[10px] font-mono px-2 py-0.5 rounded bg-cyberBorder text-neonAmber">
+            COMPONENT IDENTIFICATION
+          </div>
+        </div>
+
+        <!-- Question Prompt -->
+        <div class="text-center">
+          <h3 id="pQuizQuestionText" class="text-base md:text-lg font-tech font-semibold text-white">
+            What electrical device is depicted in the graphic above?
+          </h3>
+        </div>
+
+        <!-- Choices Grid -->
+        <div id="pQuizChoices" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <!-- Dynamically inserted choice buttons -->
+        </div>
+
+        <!-- Explanation Modal / Result Banner -->
+        <div id="pQuizResult" class="hidden p-4 rounded-xl border text-sm space-y-2">
+          <!-- Result text & details inserted by JS -->
+        </div>
+
+        <!-- Footer Next Button -->
+        <div class="flex justify-end pt-2">
+          <button id="pQuizNextBtn" onclick="nextPictureQuestion()" class="hidden px-6 py-2.5 rounded-lg bg-neonBlue text-black font-tech font-bold text-xs hover:bg-cyan-300 transition-all shadow-neon-blue">
+            NEXT QUESTION <i class="fa-solid fa-forward"></i>
+          </button>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- MODULE 4: MASTER ASSESSMENT EXAM MODE -->
+    <!-- ========================================== -->
+    <section id="mod-exam" class="tab-content hidden space-y-6">
+      
+      <!-- Start Screen -->
+      <div id="examStartScreen" class="max-w-2xl mx-auto bg-cyberCard p-8 rounded-xl border border-cyberBorder text-center space-y-6">
+        <div class="w-16 h-16 rounded-full bg-neonBlue/10 border-2 border-neonBlue text-neonBlue flex items-center justify-center mx-auto text-2xl shadow-neon-blue">
+          <i class="fa-solid fa-graduation-cap"></i>
+        </div>
+        <div>
+          <h2 class="font-tech text-2xl font-bold text-white tracking-wide">APPLIED ELECTRICITY MASTER EXAM</h2>
+          <p class="text-xs text-gray-400 mt-2">Comprehensive 25-Question Assessment covering Operational Rules, Color Standards, Connections, and Multimeter Procedures.</p>
+        </div>
+
+        <div class="grid grid-cols-3 gap-3 max-w-md mx-auto text-center">
+          <div class="p-3 rounded-lg bg-black/40 border border-cyberBorder">
+            <div class="text-xs text-gray-400 font-mono">QUESTIONS</div>
+            <div class="font-tech text-neonBlue font-bold text-lg">25</div>
+          </div>
+          <div class="p-3 rounded-lg bg-black/40 border border-cyberBorder">
+            <div class="text-xs text-gray-400 font-mono">TIME LIMIT</div>
+            <div class="font-tech text-neonAmber font-bold text-lg">20 MIN</div>
+          </div>
+          <div class="p-3 rounded-lg bg-black/40 border border-cyberBorder">
+            <div class="text-xs text-gray-400 font-mono">PASS GRADE</div>
+            <div class="font-tech text-neonGreen font-bold text-lg">75%</div>
+          </div>
+        </div>
+
+        <div class="p-4 rounded-lg bg-black/60 border border-cyberBorder text-left text-xs text-gray-300 space-y-2">
+          <div class="font-bold text-neonBlue font-tech flex items-center gap-2">
+            <i class="fa-solid fa-circle-info"></i> EXAM INSTRUCTIONS & RULES:
+          </div>
+          <ul class="list-disc list-inside space-y-1 text-gray-400">
+            <li>Includes direct definitions, series/parallel circuit rules, and multimeter zeroing steps.</li>
+            <li>You can navigate back and forth between questions before final submission.</li>
+            <li>Instant official score review & printable certificate awarded upon completion.</li>
+          </ul>
+        </div>
+
+        <button onclick="startExam()" class="px-8 py-3 rounded-lg bg-neonBlue text-black font-tech font-bold text-sm hover:bg-cyan-300 transition-all shadow-neon-blue">
+          <i class="fa-solid fa-bolt"></i> BEGIN MASTER ASSESSMENT
+        </button>
+      </div>
+
+      <!-- Live Exam Interface -->
+      <div id="examLiveScreen" class="hidden space-y-6">
+        <!-- Top Bar: Progress & Timer -->
+        <div class="bg-cyberCard p-4 rounded-xl border border-cyberBorder flex flex-col md:flex-row items-center justify-between gap-4">
+          <div class="flex items-center gap-3">
+            <span id="examQIndex" class="font-tech text-neonBlue font-bold text-sm">Question 1 / 25</span>
+            <div class="w-32 md:w-48 bg-black/50 h-2 rounded-full overflow-hidden border border-cyberBorder">
+              <div id="examProgressBar" class="bg-neonBlue h-full w-0 transition-all"></div>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-4">
+            <div class="flex items-center gap-2 bg-black/40 px-3 py-1.5 rounded-lg border border-cyberBorder font-mono text-neonAmber text-sm">
+              <i class="fa-solid fa-clock"></i>
+              <span id="examTimer">20:00</span>
+            </div>
+            <button onclick="submitExam()" class="px-4 py-1.5 rounded-lg bg-neonGreen/10 text-neonGreen border border-neonGreen hover:bg-neonGreen/20 font-tech text-xs font-bold transition-all">
+              FINISH & SUBMIT
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <!-- Question & Options Panel -->
+          <div class="lg:col-span-8 bg-cyberCard p-6 rounded-xl border border-cyberBorder space-y-6">
+            <div class="space-y-2">
+              <span id="examCategoryBadge" class="text-[10px] font-mono px-2.5 py-1 rounded bg-cyberBorder text-neonBlue">CATEGORY: MEASUREMENT RULES</span>
+              <h3 id="examQuestionText" class="text-base md:text-lg font-tech font-semibold text-white leading-snug">
+                Question statement goes here?
+              </h3>
+            </div>
+
+            <!-- Options Container -->
+            <div id="examOptionsContainer" class="space-y-3">
+              <!-- Dynamically populated options -->
+            </div>
+
+            <!-- Question Navigation -->
+            <div class="flex items-center justify-between pt-4 border-t border-cyberBorder">
+              <button onclick="prevExamQuestion()" id="examPrevBtn" class="px-4 py-2 rounded-lg bg-cyberDark border border-cyberBorder hover:border-neonBlue text-xs font-tech text-white">
+                <i class="fa-solid fa-chevron-left"></i> Previous
+              </button>
+              <button onclick="nextExamQuestion()" id="examNextBtn" class="px-6 py-2 rounded-lg bg-neonBlue text-black font-tech font-bold text-xs hover:bg-cyan-300 transition-all shadow-neon-blue">
+                Next <i class="fa-solid fa-chevron-right"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Question Palette Matrix -->
+          <div class="lg:col-span-4 bg-cyberCard p-6 rounded-xl border border-cyberBorder space-y-4">
+            <h4 class="font-tech text-xs text-neonBlue uppercase tracking-wider font-bold">Question Palette</h4>
+            <div id="questionPalette" class="grid grid-cols-5 gap-2">
+              <!-- 25 palette buttons inserted by JS -->
+            </div>
+            <div class="pt-4 border-t border-cyberBorder text-[11px] font-mono text-gray-400 space-y-1">
+              <div class="flex items-center gap-2"><span class="w-3 h-3 rounded bg-neonBlue"></span> Current Question</div>
+              <div class="flex items-center gap-2"><span class="w-3 h-3 rounded bg-cyberBorder"></span> Unanswered</div>
+              <div class="flex items-center gap-2"><span class="w-3 h-3 rounded bg-neonGreen/30 border border-neonGreen"></span> Answered</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Exam Results & Certificate Screen -->
+      <div id="examResultScreen" class="hidden max-w-3xl mx-auto space-y-6">
+        <div class="bg-cyberCard p-8 rounded-xl border border-cyberBorder text-center space-y-6">
+          
+          <div id="examRankBadgeContainer" class="w-20 h-20 rounded-full bg-neonBlue/10 border-2 border-neonBlue text-neonBlue flex items-center justify-center mx-auto text-3xl shadow-neon-blue">
+            <i class="fa-solid fa-award"></i>
+          </div>
+
+          <div>
+            <span id="examRankTitle" class="text-xs font-tech px-3 py-1 rounded bg-neonBlue/20 text-neonBlue border border-neonBlue">MASTER ELECTRICIAN RANK</span>
+            <h2 id="examFinalScore" class="font-tech text-4xl font-extrabold text-white mt-3">96%</h2>
+            <p id="examPassSubtitle" class="text-xs text-neonGreen font-mono mt-1">PASSED - EXCELLENT PERFORMANCE</p>
+          </div>
+
+          <div class="grid grid-cols-3 gap-3 max-w-md mx-auto text-center">
+            <div class="p-3 rounded-lg bg-black/40 border border-cyberBorder">
+              <div class="text-xs text-gray-400 font-mono">CORRECT</div>
+              <div id="examStatCorrect" class="font-tech text-neonGreen font-bold text-lg">24 / 25</div>
+            </div>
+            <div class="p-3 rounded-lg bg-black/40 border border-cyberBorder">
+              <div class="text-xs text-gray-400 font-mono">ACCURACY</div>
+              <div id="examStatAccuracy" class="font-tech text-neonBlue font-bold text-lg">96%</div>
+            </div>
+            <div class="p-3 rounded-lg bg-black/40 border border-cyberBorder">
+              <div class="text-xs text-gray-400 font-mono">TIME TAKEN</div>
+              <div id="examStatTime" class="font-tech text-neonAmber font-bold text-lg">08:42</div>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap items-center justify-center gap-3 pt-4 border-t border-cyberBorder">
+            <button onclick="openCertificateModal()" class="px-6 py-2.5 rounded-lg bg-neonGreen text-black font-tech font-bold text-xs hover:bg-emerald-300 transition-all shadow-neon-green">
+              <i class="fa-solid fa-file-certificate"></i> PRINT / VIEW CERTIFICATE
+            </button>
+            <button onclick="restartExam()" class="px-6 py-2.5 rounded-lg bg-cyberDark border border-cyberBorder hover:border-neonBlue text-xs font-tech text-white">
+              <i class="fa-solid fa-rotate-right"></i> RETAKE EXAM
+            </button>
+          </div>
+
+        </div>
+
+        <!-- Breakdown Review Accordion -->
+        <div class="bg-cyberCard p-6 rounded-xl border border-cyberBorder space-y-4">
+          <h3 class="font-tech text-sm text-neonBlue uppercase font-bold">Detailed Question Review</h3>
+          <div id="examReviewContainer" class="space-y-3 divide-y divide-cyberBorder/40">
+            <!-- Dynamic review item breakdown -->
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ========================================== -->
+    <!-- MODULE 5: CIRCUIT WIRE & SYMBOL MATCHING GAME -->
+    <!-- ========================================== -->
+    <section id="mod-matching" class="tab-content hidden space-y-6">
+      <div class="bg-cyberCard p-4 rounded-xl border border-cyberBorder flex flex-col md:flex-row items-center justify-between gap-4">
+        <div>
+          <h2 class="font-tech text-lg text-neonBlue font-bold flex items-center gap-2">
+            <i class="fa-solid fa-puzzle-piece"></i> CIRCUIT WIRE & SYMBOL MATCHING ARCADE
+          </h2>
+          <p class="text-xs text-gray-400">Pair each electrical component card with its corresponding operational description or status.</p>
+        </div>
+        
+        <div class="flex items-center gap-4">
+          <div class="text-xs font-mono bg-black/40 px-3 py-1.5 rounded-lg border border-cyberBorder text-neonAmber">
+            MOVES: <span id="matchMoves">0</span>
+          </div>
+          <div class="text-xs font-mono bg-black/40 px-3 py-1.5 rounded-lg border border-cyberBorder text-neonGreen">
+            PAIRS: <span id="matchPairs">0 / 6</span>
+          </div>
+          <button onclick="initMatchingGame()" class="px-3 py-1.5 rounded-lg bg-neonBlue/10 text-neonBlue border border-neonBlue hover:bg-neonBlue/20 text-xs font-tech">
+            <i class="fa-solid fa-arrows-rotate"></i> Reset Game
+          </button>
+        </div>
+      </div>
+
+      <!-- Game Cards Grid -->
+      <div id="matchGrid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 perspective-1000">
+        <!-- Dynamically rendered 12 flip cards -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- MODAL: DETAILED COMPONENT INSPECTION -->
+  <div id="componentModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-cyberCard border border-neonBlue rounded-2xl max-w-xl w-full p-6 space-y-4 shadow-neon-blue relative animate-fade-in">
+      <button onclick="closeComponentModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-lg">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <div class="flex items-center gap-4 border-b border-cyberBorder pb-4">
+        <div id="modalGraphic" class="w-16 h-16 rounded-xl bg-black/60 border border-cyberBorder p-2 flex items-center justify-center text-neonBlue">
+          <!-- SVG inserted -->
+        </div>
+        <div>
+          <span id="modalCategory" class="text-[10px] font-mono px-2 py-0.5 rounded bg-cyberBorder text-neonAmber">CATEGORY</span>
+          <h3 id="modalTitle" class="font-tech text-xl font-bold text-white mt-1">BANANA JACK</h3>
+          <p id="modalAlias" class="text-xs font-mono text-gray-400">(Connecting Wires)</p>
+        </div>
+      </div>
+
+      <div class="space-y-3 text-sm text-gray-300">
+        <div>
+          <h4 class="text-xs font-tech text-neonBlue uppercase tracking-wider">Official Module Definition</h4>
+          <p id="modalDesc" class="mt-1 text-gray-200 leading-relaxed"></p>
+        </div>
+
+        <div id="modalColorSpecs" class="p-3 rounded-lg bg-black/40 border border-cyberBorder space-y-2">
+          <!-- Color coding or key specifications -->
+        </div>
+      </div>
+
+      <div class="pt-2 flex justify-end">
+        <button onclick="closeComponentModal()" class="px-5 py-2 rounded-lg bg-neonBlue text-black font-tech font-bold text-xs hover:bg-cyan-300 transition-all">
+          CLOSE INSPECTOR
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: PRINTABLE REVIEWER CERTIFICATE -->
+  <div id="certModal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-slate-900 border-2 border-neonAmber rounded-2xl max-w-2xl w-full p-8 space-y-6 relative text-center text-white shadow-neon-amber">
+      <button onclick="closeCertModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-lg">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <!-- Certificate Layout Box -->
+      <div class="border-4 border-double border-neonAmber/40 p-8 rounded-xl bg-black/50 space-y-6">
+        <div class="flex justify-center text-neonAmber text-4xl">
+          <i class="fa-solid fa-award"></i>
+        </div>
+
+        <div>
+          <h2 class="font-tech text-2xl font-bold text-neonAmber tracking-widest uppercase">CERTIFICATE OF MASTERY</h2>
+          <p class="text-xs font-mono text-gray-400 mt-1">APPLIED ELECTRICITY & MULTIMETER DIAGNOSTICS</p>
+        </div>
+
+        <p class="text-xs text-gray-300 italic">This official digital certification verifies that</p>
+
+        <div class="border-b-2 border-neonBlue pb-2 max-w-sm mx-auto">
+          <input type="text" id="certStudentName" placeholder="Enter Candidate Name" value="APPLIED ELECTRICITY STUDENT" class="w-full text-center bg-transparent font-tech text-xl text-neonBlue font-bold focus:outline-none">
+        </div>
+
+        <p class="text-xs text-gray-300 max-w-md mx-auto leading-relaxed">
+          has successfully demonstrated proficiency in 20 Electronic Devices and Sanwa Analog Multimeter Operational Principles, scoring <span id="certScoreText" class="text-neonGreen font-bold font-tech">96%</span> on the Master Exam.
+        </p>
+
+        <div class="grid grid-cols-2 gap-4 pt-4 border-t border-cyberBorder text-xs font-mono">
+          <div>
+            <div class="text-gray-500">DATE ISSUED</div>
+            <div id="certDateText" class="text-neonAmber">2026-10-29</div>
+          </div>
+          <div>
+            <div class="text-gray-500">RANK ACHIEVED</div>
+            <div id="certRankText" class="text-neonBlue">MASTER ELECTRICIAN</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex justify-center gap-3">
+        <button onclick="window.print()" class="px-6 py-2.5 rounded-lg bg-neonAmber text-black font-tech font-bold text-xs hover:bg-amber-300 transition-all">
+          <i class="fa-solid fa-print"></i> PRINT CERTIFICATE
+        </button>
+        <button onclick="closeCertModal()" class="px-6 py-2.5 rounded-lg bg-cyberDark border border-cyberBorder hover:border-neonBlue text-xs font-tech text-white">
+          CLOSE
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- APPLICATION JAVASCRIPT CODE ENGINE -->
+  <script>
+    /* ==========================================================================
+       GLOBAL DATASETS & STATE VARIABLES (WITH REAL COMPONENT PHOTOS & TARGET COORDS)
+       ========================================================================== */
+    let currentTab = 'explorer';
+    let currentPartIndex = 0;
+    let currentPQuestion = null;
+    let pQuizStreak = 0;
+    let currentFilter = 'all';
+    let currentViewMode = 'grid';
+    let soundEnabled = true;
+    let audioCtx = null;
+
+    /* ==========================================================================
+       AUDIO SYNTHESIZER UTILITIES
+       ========================================================================== */
+    function toggleSound() {
+      soundEnabled = !soundEnabled;
+      const icon = document.getElementById('soundIcon');
+      const label = document.getElementById('soundLabel');
+      if (soundEnabled) {
+        icon.className = "fa-solid fa-volume-high text-neonGreen";
+        label.innerText = "SYNTH AUDIO: ON";
+      } else {
+        icon.className = "fa-solid fa-volume-xmark text-gray-500";
+        label.innerText = "SYNTH AUDIO: OFF";
+      }
+    }
+
+    function initAudio() {
+      if (!audioCtx && typeof AudioContext !== 'undefined') {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    function playZap() {
+      if (!soundEnabled) return;
+      try {
+        initAudio();
+        if (!audioCtx) return;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.08);
+        gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.08);
+      } catch (e) {}
+    }
+
+    function playCorrectSound() {
+      if (!soundEnabled) return;
+      try {
+        initAudio();
+        if (!audioCtx) return;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(523.25, audioCtx.currentTime);
+        osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1);
+        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.25);
+      } catch (e) {}
+    }
+
+    function playWrongSound() {
+      if (!soundEnabled) return;
+      try {
+        initAudio();
+        if (!audioCtx) return;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(180, audioCtx.currentTime);
+        osc.frequency.setValueAtTime(130, audioCtx.currentTime + 0.12);
+        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.25);
+      } catch (e) {}
+    }
+
+    /* ==========================================================================
+       TAB NAVIGATION & CONTROLS
+       ========================================================================== */
+    function switchTab(tabId) {
+      playZap();
+      currentTab = tabId;
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.nav-tab').forEach(el => {
+        el.className = "nav-tab px-4 py-2 rounded-lg text-xs md:text-sm font-tech font-semibold flex items-center gap-2 whitespace-nowrap transition-all text-gray-400 hover:text-white border border-transparent hover:border-cyberBorder";
+      });
+
+      const targetMod = document.getElementById(`mod-${tabId}`);
+      if (targetMod) targetMod.classList.remove('hidden');
+
+      const activeBtn = document.getElementById(`tab-${tabId}`);
+      if (activeBtn) {
+        activeBtn.className = "nav-tab px-4 py-2 rounded-lg text-xs md:text-sm font-tech font-semibold flex items-center gap-2 whitespace-nowrap transition-all bg-neonBlue/10 text-neonBlue border border-neonBlue shadow-neon-blue";
+      }
+
+      if (tabId === 'pictureQuiz' && !currentPQuestion) {
+        nextPictureQuestion();
+      } else if (tabId === 'matching' && matchCards.length === 0) {
+        initMatchingGame();
+      }
+    }
+
+    function filterComponents() {
+      const query = document.getElementById('searchInput').value.toLowerCase().trim();
+      const filtered = ALL_EXPLORER_DATA.filter(item => {
+        const matchesCategory = currentFilter === 'all' || item.cat === currentFilter;
+        const matchesQuery = !query || 
+          item.name.toLowerCase().includes(query) || 
+          item.alias.toLowerCase().includes(query) || 
+          item.desc.toLowerCase().includes(query) || 
+          item.rules.toLowerCase().includes(query);
+        return matchesCategory && matchesQuery;
+      });
+      renderExplorerComponents(filtered);
+    }
+
+    function setFilter(cat) {
+      playZap();
+      currentFilter = cat;
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.className = "filter-btn text-xs font-mono px-3 py-1.5 rounded-md bg-cyberDark text-gray-400 border border-cyberBorder hover:border-neonBlue";
+      });
+      const activeFilterBtn = document.getElementById(`filter-${cat}`);
+      if (activeFilterBtn) {
+        activeFilterBtn.className = "filter-btn text-xs font-mono px-3 py-1.5 rounded-md bg-neonBlue/20 text-neonBlue border border-neonBlue";
+      }
+      filterComponents();
+    }
+
+    function setViewMode(mode) {
+      playZap();
+      currentViewMode = mode;
+      const grid = document.getElementById('componentGrid');
+      const list = document.getElementById('componentList');
+      const btnGrid = document.getElementById('view-grid');
+      const btnList = document.getElementById('view-list');
+
+      if (mode === 'grid') {
+        grid.classList.remove('hidden');
+        list.classList.add('hidden');
+        btnGrid.className = "px-2.5 py-1 rounded text-xs text-neonBlue bg-cyberBorder";
+        btnList.className = "px-2.5 py-1 rounded text-xs text-gray-400 hover:text-white";
+      } else {
+        grid.classList.add('hidden');
+        list.classList.remove('hidden');
+        btnList.className = "px-2.5 py-1 rounded text-xs text-neonBlue bg-cyberBorder";
+        btnGrid.className = "px-2.5 py-1 rounded text-xs text-gray-400 hover:text-white";
+      }
+    }
+
+    function closeComponentModal() {
+      playZap();
+      document.getElementById('componentModal').classList.add('hidden');
+    }
+
+    /* ==========================================================================
+       FALLBACK VECTOR SVG GENERATOR
+       ========================================================================== */
+    function renderComponentSVG(icon, size = 120, targetPart = null) {
+      const tx = targetPart && targetPart.targetX ? targetPart.targetX : 50;
+      const ty = targetPart && targetPart.targetY ? targetPart.targetY : 50;
+      const label = targetPart && targetPart.text ? targetPart.text : "TARGET PART";
+
+      let iconSvg = '';
+      switch(icon) {
+        case 'banana-jack':
+          iconSvg = `<rect x="35" y="45" width="30" height="10" rx="3" fill="#00f3ff"/><circle cx="25" cy="50" r="6" fill="#ffb700"/>`;
+          break;
+        case 'indicating-lamp':
+          iconSvg = `<circle cx="50" cy="50" r="25" fill="#ff3366" opacity="0.8"/><circle cx="50" cy="50" r="15" fill="#ff3366"/>`;
+          break;
+        case 'incandescent-bulb':
+          iconSvg = `<path d="M 40 30 Q 50 10 60 30 Q 65 50 50 70 Q 35 50 40 30 Z" fill="none" stroke="#ffb700" stroke-width="3"/><path d="M 45 45 L 50 35 L 55 45" fill="none" stroke="#ffb700" stroke-width="2"/>`;
+          break;
+        case 'bulb-socket':
+          iconSvg = `<rect x="35" y="30" width="30" height="40" rx="5" fill="#334155" stroke="#00f3ff" stroke-width="2"/><circle cx="50" cy="50" r="10" fill="#ffb700"/>`;
+          break;
+        case 'fuse':
+          iconSvg = `<rect x="25" y="42" width="50" height="16" rx="3" fill="none" stroke="#00f3ff" stroke-width="2"/><line x1="25" y1="50" x2="75" y2="50" stroke="#ff3366" stroke-width="2"/>`;
+          break;
+        case 'push-button':
+          iconSvg = `<circle cx="50" cy="50" r="22" fill="#00ff88" stroke="#00f3ff" stroke-width="3"/><circle cx="50" cy="50" r="12" fill="#00ff88"/>`;
+          break;
+        case 'terminal-block':
+          iconSvg = `<rect x="20" y="35" width="60" height="30" rx="4" fill="#1e293b" stroke="#00f3ff" stroke-width="2"/><circle cx="35" cy="50" r="4" fill="#ffb700"/><circle cx="65" cy="50" r="4" fill="#ffb700"/>`;
+          break;
+        case 'fluorescent-ballast':
+          iconSvg = `<rect x="20" y="38" width="60" height="24" rx="4" fill="#1e293b" stroke="#ffb700" stroke-width="2"/><path d="M 30 50 Q 50 35 70 50" fill="none" stroke="#00f3ff" stroke-width="2"/>`;
+          break;
+        case 'emr-relay':
+          iconSvg = `<rect x="30" y="25" width="40" height="50" rx="4" fill="#1e293b" stroke="#00f3ff" stroke-width="2"/><path d="M 40 40 L 60 40 M 40 50 L 60 60" stroke="#00ff88" stroke-width="2"/>`;
+          break;
+        case 'magnetic-contactor':
+          iconSvg = `<rect x="25" y="25" width="50" height="50" rx="6" fill="#0f172a" stroke="#ff3366" stroke-width="2"/><circle cx="50" cy="40" r="8" fill="#ff3366"/><circle cx="35" cy="60" r="4" fill="#00f3ff"/><circle cx="65" cy="60" r="4" fill="#00f3ff"/>`;
+          break;
+        case 'circuit-breaker':
+          iconSvg = `<rect x="30" y="20" width="40" height="60" rx="4" fill="#1e293b" stroke="#00f3ff" stroke-width="2"/><rect x="42" y="55" width="16" height="16" rx="2" fill="#ff3366"/>`;
+          break;
+        case 'overload-relay':
+          iconSvg = `<rect x="25" y="30" width="50" height="40" rx="4" fill="#1e293b" stroke="#ffb700" stroke-width="2"/><circle cx="50" cy="50" r="10" fill="#ffb700"/>`;
+          break;
+        case 'timer-relay':
+          iconSvg = `<rect x="25" y="25" width="50" height="50" rx="6" fill="#1e293b" stroke="#00f3ff" stroke-width="2"/><circle cx="50" cy="50" r="15" fill="none" stroke="#00f3ff" stroke-width="2"/><line x1="50" y1="50" x2="50" y2="40" stroke="#ff3366" stroke-width="2"/>`;
+          break;
+        case 'analog-multimeter':
+          iconSvg = `<rect x="25" y="20" width="50" height="60" rx="5" fill="#1e293b" stroke="#00f3ff" stroke-width="2"/><path d="M 35 45 A 15 15 0 0 1 65 45" fill="none" stroke="#ff3366" stroke-width="2"/><circle cx="50" cy="62" r="8" fill="#ffb700"/>`;
+          break;
+        case 'battery-9v':
+          iconSvg = `<rect x="30" y="30" width="40" height="50" rx="4" fill="#1e293b" stroke="#ffb700" stroke-width="2"/><rect x="38" y="22" width="8" height="8" fill="#ffb700"/><circle cx="56" cy="26" r="4" fill="#ffb700"/>`;
+          break;
+        case 'fixed-resistor':
+          iconSvg = `<path d="M 15 50 L 30 50 L 35 40 L 45 60 L 55 40 L 65 60 L 70 50 L 85 50" fill="none" stroke="#00f3ff" stroke-width="3"/>`;
+          break;
+        case 'variac':
+          iconSvg = `<circle cx="50" cy="50" r="25" fill="#1e293b" stroke="#00f3ff" stroke-width="2"/><circle cx="50" cy="50" r="15" fill="#0f172a" stroke="#ffb700" stroke-width="2"/>`;
+          break;
+        case 'convenience-outlet':
+          iconSvg = `<rect x="30" y="20" width="40" height="60" rx="6" fill="#1e293b" stroke="#00f3ff" stroke-width="2"/><rect x="40" y="32" width="4" height="10" fill="#00f3ff"/><rect x="56" y="32" width="4" height="10" fill="#00f3ff"/><circle cx="50" cy="52" r="4" fill="#00f3ff"/>`;
+          break;
+        default:
+          iconSvg = `<circle cx="50" cy="50" r="25" fill="#1e293b" stroke="#00f3ff" stroke-width="2"/><path d="M 40 50 L 60 50 M 50 40 L 50 60" stroke="#00f3ff" stroke-width="2"/>`;
+      }
+
+      return `
+        <svg viewBox="0 0 100 100" class="w-full h-full">
+          <rect width="100" height="100" rx="10" fill="#0a0f1d"/>
+          ${iconSvg}
+          <g class="animate-target-bounce">
+            <circle cx="${tx}" cy="${ty}" r="10" fill="rgba(255,51,102,0.2)" stroke="#ff3366" stroke-width="1.5"/>
+            <circle cx="${tx}" cy="${ty}" r="3" fill="#ff3366"/>
+          </g>
+        </svg>
+      `;
+    }
+
+    /* ==========================================================================
+       MULTIMETER TEARDOWN HOTSPOT HANDLERS
+       ========================================================================== */
+    function initMultimeterHotspots() {
+      const hotspotsGroup = document.getElementById('hotspotsGroup');
+      if (!hotspotsGroup) return;
+      hotspotsGroup.innerHTML = '';
+
+      MULTIMETER_PARTS.forEach((part, index) => {
+        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        circle.setAttribute('cx', part.cx);
+        circle.setAttribute('cy', part.cy);
+        circle.setAttribute('r', '14');
+        circle.setAttribute('fill', '#00f3ff');
+        circle.setAttribute('fill-opacity', '0.2');
+        circle.setAttribute('stroke', '#00f3ff');
+        circle.setAttribute('stroke-width', '2');
+        circle.setAttribute('class', 'cursor-pointer hover:fill-opacity-50 transition-all');
+        circle.onclick = () => selectMultimeterPart(index);
+
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        text.setAttribute('x', part.cx);
+        text.setAttribute('y', part.cy + 4);
+        text.setAttribute('font-family', 'Orbitron');
+        text.setAttribute('font-size', '10');
+        text.setAttribute('font-weight', 'bold');
+        text.setAttribute('fill', '#ffffff');
+        text.setAttribute('text-anchor', 'middle');
+        text.setAttribute('class', 'pointer-events-none');
+        text.textContent = part.id;
+
+        hotspotsGroup.appendChild(circle);
+        hotspotsGroup.appendChild(text);
+      });
+
+      selectMultimeterPart(0);
+    }
+
+    function selectMultimeterPart(index) {
+      playZap();
+      currentPartIndex = index;
+      const part = MULTIMETER_PARTS[index];
+      if (!part) return;
+
+      document.getElementById('inspectNumber').innerText = `PART #${part.id}`;
+      document.getElementById('inspectTitle').innerText = part.name;
+      document.getElementById('inspectAlias').innerText = part.alias;
+      document.getElementById('inspectDesc').innerText = part.desc;
+      document.getElementById('inspectRule').innerText = part.rule;
+      document.getElementById('multimeterStepIndicator').innerText = `Part ${part.id} / ${MULTIMETER_PARTS.length}`;
+
+      const arrowGroup = document.getElementById('activeMultimeterArrow');
+      if (arrowGroup) {
+        arrowGroup.innerHTML = `
+          <g class="animate-target-bounce">
+            <circle cx="${part.cx}" cy="${part.cy}" r="20" fill="none" stroke="#ff3366" stroke-width="2" stroke-dasharray="4,2"/>
+            <path d="M ${part.cx > 250 ? part.cx + 50 : part.cx - 50},${part.cy - 40} L ${part.cx},${part.cy}" stroke="#ff3366" stroke-width="3" stroke-linecap="round"/>
+            <polygon points="${part.cx},${part.cy} ${part.cx + (part.cx > 250 ? 12 : -12)},${part.cy - 12} ${part.cx + (part.cx > 250 ? 4 : -4)},${part.cy - 16}" fill="#ff3366"/>
+          </g>
+        `;
+      }
+    }
+
+    function prevMultimeterPart() {
+      const newIndex = currentPartIndex > 0 ? currentPartIndex - 1 : MULTIMETER_PARTS.length - 1;
+      selectMultimeterPart(newIndex);
+    }
+
+    function nextMultimeterPart() {
+      const newIndex = currentPartIndex < MULTIMETER_PARTS.length - 1 ? currentPartIndex + 1 : 0;
+      selectMultimeterPart(newIndex);
+    }
+
+    function startMultimeterTour() {
+      selectMultimeterPart(0);
+    }
+
+    const MULTIMETER_PARTS = [
+      { id: 1, name: "Panel (Body Enclosure)", alias: "Protective Outer Panel", cx: 250, cy: 300, desc: "The hard body enclosure that protects internal circuitry and provides a stable housing for measurements.", rule: "Must be clean and free of moisture or fractures to ensure dielectric safety." },
+      { id: 2, name: "Scale Window & Archs", alias: "Reading Scale Display", cx: 250, cy: 180, desc: "The calibrated window where you read measured values (ohms, AC/DC voltage, or current).", rule: "Contains separate color-coded calibrated arches for Ohms, AC, DC, and Decibels." },
+      { id: 3, name: "Pointer Needle", alias: "Indicating Needle", cx: 220, cy: 160, desc: "The moving needle that indicates the exact measured value along the scale.", rule: "Never expose meter to mechanical shocks which bend or misalign the delicate jewel movement." },
+      { id: 4, name: "Mirror Strip", alias: "Anti-Parallax Mirror", cx: 250, cy: 218, desc: "Reflective strip behind the scale used to prevent parallax error.", rule: "Line up your eyes so the pointer directly hides its own reflection in the mirror before reading." },
+      { id: 5, name: "Zero Position Adjuster", alias: "Mechanical Zero Screw", cx: 250, cy: 262, desc: "Flat plastic screw used to manually align pointer to absolute left zero line.", rule: "Adjust with a small screwdriver when meter is turned off and disconnected." },
+      { id: 6, name: "Zero-Ohm Position Adjuster", alias: "Ohmmeter Calibrator Knob", cx: 410, cy: 330, desc: "Knob used specifically for ohmmeter function calibration.", rule: "Touch red & black test probes together and turn knob until needle aligns with 0 Ω on right." },
+      { id: 7, name: "Range Selector Switch", alias: "Function / Range Dial", cx: 250, cy: 420, desc: "Primary dial used to select desired function and maximum range threshold.", rule: "Always select a range higher than expected voltage/current to avoid blowing internal fuse." },
+      { id: 8, name: "DC Voltmeter (DCV)", alias: "Direct Current Voltage", cx: 160, cy: 360, desc: "Measures Direct Current voltage in batteries, solar cells, and DC power supplies.", rule: "Must be connected in PARALLEL across the component under test." },
+      { id: 9, name: "AC Voltmeter (ACV)", alias: "Alternating Current Voltage", cx: 335, cy: 360, desc: "Measures Alternating Current voltage in wall outlets and grid systems.", rule: "Connected in PARALLEL. Ensure correct range setting before connecting." },
+      { id: 10, name: "DC Ammeter (DCA)", alias: "Direct Current Amperage", cx: 160, cy: 490, desc: "Measures direct electrical current flow rate in milliamperes (mA).", rule: "CRITICAL: Must be connected in SERIES with the load path. Parallel connection causes short circuit!" },
+      { id: 11, name: "Ohmmeter (Ω)", alias: "Resistance & Continuity", cx: 335, cy: 490, desc: "Measures electrical resistance using meter's internal battery current.", rule: "CRITICAL: Tested on DE-ENERGIZED (powered-off) circuits only to prevent meter destruction." },
+      { id: 12, name: "Test Probes & Leads", alias: "Red & Black Conductive Leads", cx: 390, cy: 560, desc: "Red (positive) and black (negative) leads used to make circuit contact.", rule: "Check wire insulation for cracks or damage prior to testing high voltages." },
+      { id: 13, name: "Test Pins", alias: "Metallic Probe Tips", cx: 428, cy: 630, desc: "The metallic tips at the end of test probes that touch circuit contacts.", rule: "Ensure clean, oxidation-free contact tips for accurate low-resistance measurements." },
+      { id: 14, name: "Finger Guards", alias: "Safety Ridge Barriers", cx: 428, cy: 595, desc: "Raised ridges on probe handles preventing fingers from slipping forward.", rule: "Keep fingers behind raised guards at all times when probing active circuits." }
+    ];
+
+    const ALL_EXPLORER_DATA = [
+      { id: "dev-1", icon: "banana-jack", imgUrl: "./src/conwire.png", targetX: 50, targetY: 45, name: "Banana Jack", alias: "Connecting Wires", cat: "wiring", desc: "A single-wire electrical connector used for joining wires to equipment.", rules: "Standard 4mm plug design; ensure snug fit to avoid high-resistance loose contacts." },
+      { id: "dev-2", icon: "indicating-lamp", imgUrl: "./src/indl.png", targetX: 50, targetY: 35, name: "Indicating Lamp", alias: "Pilot Lamp", cat: "control", desc: "Indicator lamps (pilot lights) use green, red, and yellow/orange colors to show operational status.", rules: "Red = Emergency/Stop/Failure | Yellow/Orange = Caution/Fault/Trip | Green = Normal Run/Safety." },
+      { id: "dev-3", icon: "incandescent-bulb", imgUrl: "./src/lbulb.png", targetX: 50, targetY: 40, name: "Incandescent Bulb", alias: "Filament Light", cat: "power", desc: "Produces illumination by passing electrical current through a thin tungsten filament until it heats up and glows.", rules: "Tungsten filament operates at high temperature; sensitive to over-voltage spikes." },
+      { id: "dev-4", icon: "bulb-socket", imgUrl: "./src/soc.png", targetX: 50, targetY: 50, name: "Bulb Socket", alias: "Lamp Holder", cat: "power", desc: "Electromechanical device providing mechanical support and electrical connections for a light bulb.", rules: "Connect hot line to center pin contact and neutral to outer threaded shell for shock safety." },
+      { id: "dev-5", icon: "fuse", imgUrl: "./src/fuse.png", targetX: 50, targetY: 50, name: "Fuse", alias: "Overcurrent Protection", cat: "control", desc: "Provides overcurrent protection of an electrical circuit using a calibrated melting metal strip.", rules: "Thin metal filament melts and breaks circuit when current exceeds amperage rating; non-resettable." },
+      { id: "dev-6", icon: "push-button", imgUrl: "./src/pushb.png", targetX: 35, targetY: 40, name: "Push Button", alias: "Momentary Control Switch", cat: "control", desc: "Mechanical device controlling current flow by opening or closing contacts when pressed.", rules: "Green = Normally Open (NO) Start command | Red = Normally Closed (NC) Stop command | Mushroom = E-Stop." },
+      { id: "dev-7", icon: "terminal-block", imgUrl: "./src/tblock.png", targetX: 50, targetY: 45, name: "Terminal Block", alias: "Connection Terminal", cat: "wiring", desc: "Modular block with insulated frame securing two or more wires together cleanly.", rules: "Tighten screw terminals firmly to prevent arcing and thermal oxidation." },
+      { id: "dev-8", icon: "fluorescent-ballast", imgUrl: "./src/fballas.png", targetX: 50, targetY: 50, name: "Fluorescent Ballast", alias: "Arc Control Transformer", cat: "power", desc: "Regulates voltage, delivers initial high-voltage spike to strike arc, and limits operating current.", rules: "Requires high-voltage pulse generator; check ballast wiring diagram before replacing." },
+      { id: "dev-9", icon: "emr-relay", imgUrl: "./src/electromr.png", targetX: 50, targetY: 55, name: "Electromechanical Relay", alias: "EMR Switch", cat: "control", desc: "Switch operated by an electromagnet to mechanically open or close contact sets.", rules: "Allows a low-power control signal to switch isolated high-power auxiliary circuits." },
+      { id: "dev-10", icon: "magnetic-contactor", imgUrl: "./src/magcon.png", targetX: 50, targetY: 25, name: "Magnetic Contactor", alias: "Heavy Duty Power Relay", cat: "control", desc: "Electrically controlled heavy-duty switch used to connect high-power motor loads.", rules: "Coil terminals A1 and A2 actuate main power contacts; built to withstand heavy inductive arc spikes." },
+      { id: "dev-11", icon: "circuit-breaker", imgUrl: "./src/breaker.png", targetX: 50, targetY: 70, name: "Circuit Breaker", alias: "Automatic Safety Switch", cat: "control", desc: "Automatic safety switch protecting circuits from damage caused by overloads or short circuits.", rules: "Contains manual 'Push to Trip Fault' button to test internal trip bar operation." },
+      { id: "dev-12", icon: "overload-relay", imgUrl: "./src/over.png", targetX: 45, targetY: 50, name: "Overload Relay", alias: "Thermal Motor Protector", cat: "control", desc: "Protects electric motors from damage caused by sustained excessive current and overheating.", rules: "Wired directly beneath contactor; trip current set using adjustable rotary dial." },
+      { id: "dev-13", icon: "timer-relay", imgUrl: "./src/trelay.png", targetX: 50, targetY: 45, name: "Timer Relay", alias: "Time Delay Switch", cat: "control", desc: "Opens or closes contacts automatically after a preset time delay period.", rules: "Available in On-Delay and Off-Delay modes for sequential machine startup." },
+      { id: "dev-14", icon: "analog-multimeter", imgUrl: "./src/multm.png", targetX: 50, targetY: 30, name: "Analog Multimeter", alias: "VOM (Volt-Ohm-Milliammeter)", cat: "meter", desc: "Multi-function analog meter measuring voltage, current, resistance, and continuity.", rules: "Voltage = Parallel | Current = Series | Resistance = De-energized loop only." },
+      { id: "dev-15", icon: "battery-9v", imgUrl: "./src/9v.png", targetX: 50, targetY: 20, name: "9V Battery", alias: "Transistor Power Cell", cat: "power", desc: "Rectangular cuboid-shaped power source supplying nominal 9V DC through top snap terminals.", rules: "Smaller snap terminal is positive (+); larger snap is negative (-)." },
+      { id: "dev-16", icon: "battery-9v", imgUrl: "./src/1.5v.png", targetX: 50, targetY: 30, name: "1.5V Battery", alias: "Single-Cell Power Source", cat: "power", desc: "Single-cell power source delivering nominal 1.5V DC for portable devices.", rules: "Widely used in series strings to increase total system operating voltage." },
+      { id: "dev-17", icon: "fixed-resistor", imgUrl: "./src/fres.png", targetX: 50, targetY: 50, name: "Fixed Resistor", alias: "Current Limiting Component", cat: "power", desc: "Passive two-terminal component with unchangeable electrical resistance value.", rules: "Limits current and divides voltage; color-coded bands indicate resistance and tolerance." },
+      { id: "dev-18", icon: "variac", imgUrl: "./src/vartrans.png", targetX: 50, targetY: 35, name: "Variable Transformer", alias: "Variac", cat: "power", desc: "Autotransformer providing continuously adjustable output AC voltage.", rules: "Adjust top dial smoothly; does not provide electrical isolation between input and output." },
+      { id: "dev-19", icon: "convenience-outlet", imgUrl: "./src/conout.png", targetX: 42, targetY: 35, name: "Convenience Outlet", alias: "Wall Receptacle", cat: "power", desc: "Receptacle installed in walls supplying connection points for portable appliances.", rules: "Short slot = Hot (Line) | Long slot = Neutral | Round pin = Earth Ground." },
+      { id: "dev-20", icon: "variac", imgUrl: "./src/vps.png", targetX: 50, targetY: 40, name: "Variable Power Supply", alias: "Bench Power Unit", cat: "power", desc: "Electronic bench instrument letting you safely adjust voltage and current output limits.", rules: "Set current limit threshold prior to connecting sensitive semiconductor test loads." }
+    ];
+
+    /* ==========================================================================
+       REAL PHOTO & OVERLAY ARROW RENDERER
+       ========================================================================== */
+    function renderComponentImage(item, size = 120, targetPart = null) {
+      const tx = (targetPart && targetPart.targetX) ? targetPart.targetX : (item.targetX || 50);
+      const ty = (targetPart && targetPart.targetY) ? targetPart.targetY : (item.targetY || 50);
+      const calloutLabel = (targetPart && targetPart.text) ? targetPart.text : "TARGET PART";
+
+      const fallbackSvg = renderComponentSVG(item.icon, size, targetPart);
+
+      return `
+        <div class="relative w-full h-full flex items-center justify-center overflow-hidden rounded-lg bg-black/80 border border-cyberBorder">
+          <img src="${item.imgUrl}" alt="${item.name}" 
+               class="w-full h-full object-cover rounded-lg transition-transform duration-300 hover:scale-105"
+               onerror="this.onerror=null; this.parentElement.innerHTML=\`${fallbackSvg.replace(/"/g, '&quot;')}\`;" />
+          
+          <!-- DYNAMIC OVERLAY CALLOUT ARROW ON TOP OF REAL PHOTO -->
+          <div class="absolute inset-0 pointer-events-none">
+            <svg class="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+              <defs>
+                <marker id="photo-red-arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                  <path d="M 0 0 L 10 5 L 0 10 z" fill="#ff3366" />
+                </marker>
+              </defs>
+              <g class="animate-target-bounce">
+                <!-- Pulsing Target Rings -->
+                <circle cx="${tx}" cy="${ty}" r="12" fill="rgba(255, 51, 102, 0.3)" stroke="#ff3366" stroke-width="2"/>
+                <circle cx="${tx}" cy="${ty}" r="4" fill="#ff3366"/>
+
+                <!-- Arrow Pointer Shaft -->
+                <path d="M ${tx < 50 ? tx + 28 : tx - 28},${ty < 50 ? ty + 24 : ty - 24} L ${tx + (tx < 50 ? 6 : -6)},${ty + (ty < 50 ? 6 : -6)}" 
+                      stroke="#ff3366" stroke-width="3" marker-end="url(#photo-red-arrow)" stroke-linecap="round"/>
+
+                <!-- Callout Label Tag -->
+                <rect x="${tx < 50 ? tx + 15 : tx - 85}" y="${ty < 50 ? ty + 22 : ty - 38}" width="70" height="14" rx="3" fill="#0f172a" stroke="#ff3366" stroke-width="1.2"/>
+                <text x="${tx < 50 ? tx + 50 : tx - 50}" y="${ty < 50 ? ty + 32 : ty - 28}" font-family="Orbitron" font-size="6" font-weight="bold" fill="#00f3ff" text-anchor="middle">${calloutLabel}</text>
+              </g>
+            </svg>
+          </div>
+        </div>
+      `;
+    }
+
+    /* ==========================================================================
+       UPDATED RENDERING ENGINE FOR EXPLORER & QUIZ
+       ========================================================================== */
+    function renderExplorerComponents(data = ALL_EXPLORER_DATA) {
+      const gridContainer = document.getElementById('componentGrid');
+      const tableBody = document.getElementById('componentTableBody');
+      if (!gridContainer || !tableBody) return;
+
+      gridContainer.innerHTML = '';
+      tableBody.innerHTML = '';
+
+      if (data.length === 0) {
+        gridContainer.innerHTML = `<div class="col-span-full py-12 text-center text-gray-500 font-tech">No matching components found.</div>`;
+        tableBody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-gray-500 font-tech">No matching components found.</td></tr>`;
+        return;
+      }
+
+      data.forEach((item) => {
+        const card = document.createElement('div');
+        card.className = "bg-cyberCard rounded-xl border border-cyberBorder hover:border-neonBlue transition-all duration-300 p-4 flex flex-col justify-between space-y-3 group hover:shadow-neon-blue cursor-pointer";
+        card.onclick = () => openComponentModal(item.id);
+
+        card.innerHTML = `
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-cyberDark text-neonAmber border border-cyberBorder">${item.cat.toUpperCase()}</span>
+            <button class="text-gray-500 group-hover:text-neonBlue transition-colors"><i class="fa-solid fa-expand text-xs"></i></button>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <div class="w-20 h-20 rounded-lg bg-black/60 border border-cyberBorder p-1 flex items-center justify-center shrink-0 overflow-hidden">
+              ${renderComponentImage(item, 80)}
+            </div>
+            <div>
+              <h3 class="font-tech text-sm font-bold text-white group-hover:text-neonBlue transition-colors leading-tight">${item.name}</h3>
+              <p class="text-[11px] font-mono text-gray-400 mt-0.5 line-clamp-1">${item.alias}</p>
+            </div>
+          </div>
+
+          <p class="text-xs text-gray-300 line-clamp-2 leading-relaxed">${item.desc}</p>
+
+          <div class="pt-2 border-t border-cyberBorder/50 flex items-center justify-between text-[11px]">
+            <span class="text-neonBlue font-mono flex items-center gap-1"><i class="fa-solid fa-shield-halved text-[10px]"></i> Rule Ready</span>
+            <span class="text-gray-400 group-hover:text-white font-tech">Inspect <i class="fa-solid fa-chevron-right text-[10px]"></i></span>
+          </div>
+        `;
+        gridContainer.appendChild(card);
+
+        const row = document.createElement('tr');
+        row.className = "hover:bg-cyberDark/60 transition-colors";
+        row.innerHTML = `
+          <td class="p-3">
+            <div class="w-12 h-12 rounded bg-black/50 border border-cyberBorder p-1 flex items-center justify-center overflow-hidden">
+              ${renderComponentImage(item, 48)}
+            </div>
+          </td>
+          <td class="p-3">
+            <div class="font-tech font-bold text-white text-xs">${item.name}</div>
+            <div class="text-[10px] font-mono text-gray-400">${item.alias}</div>
+          </td>
+          <td class="p-3">
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-cyberDark text-neonAmber border border-cyberBorder">${item.cat}</span>
+          </td>
+          <td class="p-3 text-xs text-gray-300 max-w-md">
+            <p class="line-clamp-2">${item.desc}</p>
+          </td>
+          <td class="p-3 text-right">
+            <button onclick="openComponentModal('${item.id}')" class="px-3 py-1 rounded bg-neonBlue/10 text-neonBlue border border-neonBlue hover:bg-neonBlue/20 font-tech text-xs">
+              Inspect
+            </button>
+          </td>
+        `;
+        tableBody.appendChild(row);
+      });
+    }
+
+    function openComponentModal(id) {
+      playZap();
+      const item = ALL_EXPLORER_DATA.find(x => x.id === id);
+      if (!item) return;
+
+      document.getElementById('modalGraphic').innerHTML = renderComponentImage(item, 100);
+      document.getElementById('modalCategory').innerText = item.cat.toUpperCase();
+      document.getElementById('modalTitle').innerText = item.name;
+      document.getElementById('modalAlias').innerText = `(${item.alias})`;
+      document.getElementById('modalDesc').innerText = item.desc;
+
+      const colorSpecs = document.getElementById('modalColorSpecs');
+      colorSpecs.innerHTML = `
+        <div class="text-xs font-tech text-neonAmber font-bold flex items-center gap-1.5">
+          <i class="fa-solid fa-triangle-exclamation"></i> OPERATIONAL RULE / COLOR STANDARD
+        </div>
+        <p class="text-xs text-gray-300 leading-relaxed">${item.rules}</p>
+      `;
+
+      document.getElementById('componentModal').classList.remove('hidden');
+    }
+
+    function nextPictureQuestion() {
+      playZap();
+      document.getElementById('pQuizResult').classList.add('hidden');
+      document.getElementById('pQuizNextBtn').classList.add('hidden');
+
+      const currentItem = ALL_EXPLORER_DATA[Math.floor(Math.random() * ALL_EXPLORER_DATA.length)];
+      currentPQuestion = currentItem;
+
+      document.getElementById('pQuizQuestionText').innerText = `Identify the real component indicated by the RED TARGET ARROW:`;
+
+      // Render photo with explicit callout arrow!
+      document.getElementById('pQuizVisualContainer').innerHTML = renderComponentImage(currentItem, 180, { text: "IDENTIFY THIS PART" });
+
+      // Build choices distractors
+      const distractors = ALL_EXPLORER_DATA.filter(x => x.name !== currentItem.name)
+                                          .sort(() => 0.5 - Math.random())
+                                          .slice(0, 3);
+      
+      const options = [currentItem, ...distractors].sort(() => 0.5 - Math.random());
+
+      const choicesContainer = document.getElementById('pQuizChoices');
+      choicesContainer.innerHTML = '';
+
+      options.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = "pQuizOptBtn p-3 rounded-lg bg-cyberDark border border-cyberBorder hover:border-neonBlue text-sm text-left font-tech text-white transition-all flex items-center justify-between";
+        btn.innerHTML = `<span>${opt.name}</span> <i class="fa-regular fa-circle text-gray-500"></i>`;
+        btn.onclick = () => checkPictureAnswer(opt, btn);
+        choicesContainer.appendChild(btn);
+      });
+    }
+
+    function checkPictureAnswer(selected, btnEl) {
+      const isCorrect = selected.id === currentPQuestion.id;
+      const resBox = document.getElementById('pQuizResult');
+      resBox.classList.remove('hidden');
+
+      document.querySelectorAll('.pQuizOptBtn').forEach(b => b.disabled = true);
+
+      if (isCorrect) {
+        playCorrectSound();
+        pQuizStreak++;
+        btnEl.className = "pQuizOptBtn p-3 rounded-lg bg-neonGreen/20 border-2 border-neonGreen text-sm text-left font-tech text-white flex items-center justify-between";
+        btnEl.querySelector('i').className = "fa-solid fa-circle-check text-neonGreen";
+
+        resBox.className = "p-4 rounded-xl border border-neonGreen bg-neonGreen/10 text-neonGreen text-sm space-y-1";
+        resBox.innerHTML = `
+          <div class="font-bold font-tech flex items-center gap-2"><i class="fa-solid fa-circle-check"></i> CORRECT IDENTIFICATION!</div>
+          <p class="text-xs text-gray-300">${currentPQuestion.name} (${currentPQuestion.alias}): ${currentPQuestion.desc}</p>
+        `;
+      } else {
+        playWrongSound();
+        pQuizStreak = 0;
+        btnEl.className = "pQuizOptBtn p-3 rounded-lg bg-neonRed/20 border-2 border-neonRed text-sm text-left font-tech text-white flex items-center justify-between";
+        btnEl.querySelector('i').className = "fa-solid fa-circle-xmark text-neonRed";
+
+        resBox.className = "p-4 rounded-xl border border-neonRed bg-neonRed/10 text-neonRed text-sm space-y-1";
+        resBox.innerHTML = `
+          <div class="font-bold font-tech flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation"></i> INCORRECT ANSWER</div>
+          <p class="text-xs text-gray-300">Correct Component was <span class="font-bold text-white">${currentPQuestion.name}</span>. Rule: ${currentPQuestion.rules}</p>
+        `;
+      }
+
+      document.getElementById('pQuizStreak').innerText = pQuizStreak;
+      document.getElementById('pQuizNextBtn').classList.remove('hidden');
+    }
+
+    /* ==========================================================================
+       MODULE 4: MASTER ASSESSMENT EXAM ENGINE
+       ========================================================================== */
+    const EXAM_QUESTIONS_POOL = [
+      { q: "What is the primary function of the Mirror stripe located under the multimeter scale?", options: ["Adjust circuit current", "Prevent parallax error by hiding needle reflection", "Increase voltage capacity", "Calibrate zero ohms"], ans: 1, cat: "MULTIMETER DIAGNOSTICS", exp: "To read correctly, line up your eyes so the pointer directly hides its own reflection in the mirror, preventing parallax error." },
+      { q: "In what electrical circuit configuration MUST an Ammeter (DCA) be connected?", options: ["In parallel with the voltage source", "In series with the load path", "Directly across battery terminals", "In de-energized loop only"], ans: 1, cat: "CIRCUIT RULES", exp: "Ammeters measure charge flow rate and must be connected in SERIES within the active line." },
+      { q: "Under what specific condition should resistance (Ohmmeter Ω) tests be conducted?", options: ["On energized 220V power lines", "Only on de-energized (powered-off) circuits", "In parallel with live transformers", "While motor is running at full speed"], ans: 1, cat: "SAFETY RULES", exp: "Ohmmeter tests utilize the meter's internal battery and MUST be tested on de-energized circuits only to prevent meter destruction." },
+      { q: "What status is indicated by a RED Indicating Lamp (Pilot Light)?", options: ["Normal operation / ready", "Emergency, danger, system failure, or stop condition", "Caution / abnormal trip warning", "Standby ready mode"], ans: 1, cat: "COLOR STANDARDS", exp: "Red indicator lights signify emergency, danger, system failure, or stop condition." },
+      { q: "What contact configuration does a GREEN Push Button typically utilize?", options: ["Normally Closed (NC)", "Normally Open (NO) for Start/Go/Run command", "Mushroom E-Stop", "Time Delay Latch"], ans: 1, cat: "CONTROL SWITCHES", exp: "Green push buttons are Normally Open (NO) used to trigger START commands." },
+      { q: "What mechanical screw on an analog multimeter aligns the pointer needle to the absolute left zero line?", options: ["Zero-Ohm Position Adjuster", "Zero Position Adjuster (Mechanical Zero)", "Range Selector Knob", "Finger Guard Screw"], ans: 1, cat: "MULTIMETER DIAGNOSTICS", exp: "The Zero Position Adjuster is a flat plastic screw used to align the pointer to the left zero line when powered OFF." },
+      { q: "Which component protects electric motors specifically from sustained excessive current and thermal overheating?", options: ["Fluorescent Ballast", "Overload Relay", "Incandescent Bulb", "Banana Jack"], ans: 1, cat: "PROTECTION DEVICES", exp: "Overload relays monitor sustained motor current and interrupt contactor coils when overheating occurs." },
+      { q: "What safety feature on test probes prevents your fingers from slipping forward onto live circuits?", options: ["Finger Guards", "Test Pins", "Terminal Block", "Mirror Arc"], ans: 0, cat: "SAFETY EQUIPMENT", exp: "Finger guards are raised ridges on probe handles preventing finger contact with live tips." },
+      { q: "What electrical connector consists of a single-wire connector used for joining wires to equipment?", options: ["Convenience Outlet", "Banana Jack", "Fluorescent Ballast", "Variac"], ans: 1, cat: "WIRING", exp: "A Banana Jack is a single-wire connector used for quick equipment wire interconnections." },
+      { q: "What device delivers an initial high-voltage spike needed to strike an arc in a fluorescent fixture?", options: ["Fluorescent Ballast", "Fixed Resistor", "Circuit Breaker", "Timer Relay"], ans: 0, cat: "LIGHTING CONTROLS", exp: "The ballast regulates voltage, delivers the initial striking arc spike, and limits operational current." },
+      { q: "What heavy-duty electrically controlled switch features coil terminals designated as A1 and A2?", options: ["Magnetic Contactor", "Toggle Switch", "Banana Plug", "Incandescent Holder"], ans: 0, cat: "INDUSTRIAL CONTROLS", exp: "Magnetic Contactors use A1/A2 coil terminals to switch high-power contact sets." },
+      { q: "What manual mechanism on a Circuit Breaker releases internal trip bars to force breaker contacts open?", options: ["Zero-Ohm Knob", "Push to Trip Fault Button", "Mushroom Slam Cap", "Range Selector Dial"], ans: 1, cat: "PROTECTION DEVICES", exp: "Pressing 'Push to Trip Fault' manually tests and releases the internal trip bar." },
+      { q: "What electrical safety component contains a conductive metal filament designed to melt under overcurrent?", options: ["Fuse", "Convenience Outlet", "Variac", "Terminal Block"], ans: 0, cat: "PROTECTION DEVICES", exp: "Fuses protect circuits using a conductive filament calibrated to melt when amperage threshold is exceeded." },
+      { q: "What shape is specifically specified for an Emergency Stop push button cap?", options: ["Flat Square", "Mushroom Head", "Recessed Oval", "Threaded Screw"], ans: 1, cat: "CONTROL SWITCHES", exp: "Emergency Stop buttons feature large Mushroom Head caps for fast palm impact actuation." },
+      { q: "How is a Voltmeter (DCV or ACV) connected to measure potential difference across a load?", options: ["In series inside the line", "In parallel across the component", "To earth ground only", "With de-energized battery removed"], ans: 1, cat: "CIRCUIT RULES", exp: "Voltmeters measure potential difference and are always connected in PARALLEL." },
+      { q: "What knob is adjusted after touching the red and black probes together on an analog multimeter?", options: ["Zero-Ohm Position Adjuster", "Mechanical Zero Screw", "Range Selector Knob", "Finger Collar"], ans: 0, cat: "MULTIMETER DIAGNOSTICS", exp: "Touching probes together completes the loop to calibrate 0 Ω on the right using the Zero-Ohm Adjuster." },
+      { q: "What passive two-terminal component has an unchangeable set resistance value to limit current or divide voltage?", options: ["Fixed Resistor", "Variable Power Supply", "Variac", "Contactor"], ans: 0, cat: "PASSIVE COMPONENTS", exp: "Fixed resistors maintain a set, unchangeable electrical resistance value." },
+      { q: "What status is signified by a Yellow or Orange Indicating Lamp on a panel?", options: ["Normal ready status", "Caution, warning, abnormal condition, or fault/trip", "Emergency stop halt", "Circuit de-energized"], ans: 1, cat: "COLOR STANDARDS", exp: "Yellow/Orange lamps indicate caution, warning, abnormal condition, or trip fault." },
+      { q: "What is the nominal voltage supplied by a standard single-cell household battery?", options: ["9V", "1.5V", "12V", "220V"], ans: 1, cat: "POWER SOURCES", exp: "Single-cell standard household batteries deliver a nominal voltage of 1.5V." },
+      { q: "What physical term describes the 9V battery frame structure?", options: ["Cylindrical tube", "Rectangular cuboid", "Spherical puck", "Modular rail block"], ans: 1, cat: "POWER SOURCES", exp: "A 9V battery is a rectangular cuboid-shaped battery with top snap terminals." },
+      { q: "Which switch component opens or closes contacts automatically after a preset time delay?", options: ["Overload Relay", "Timer Relay", "Fuse", "Banana Jack"], ans: 1, cat: "INDUSTRIAL CONTROLS", exp: "Timer Relays open or close contacts after a preset time delay." },
+      { q: "What modular component features an insulated frame securing two or more wires together cleanly?", options: ["Terminal Block", "Bulb Socket", "Variac", "Pilot Light"], ans: 0, cat: "WIRING", exp: "Terminal Blocks provide insulated modular frames for securing wire terminations." },
+      { q: "What device allows smooth, continuous manual adjustment of AC voltage output?", options: ["Variable Transformer (Variac)", "Fixed Resistor", "9V Battery", "Fuse"], ans: 0, cat: "POWER SUPPLIES", exp: "A Variable Transformer (Variac) provides adjustable output AC voltage." },
+      { q: "What device provides a wall or baseboard connection point for portable tools and chargers?", options: ["Convenience Outlet", "Magnetic Contactor", "Terminal Block", "Ballast"], ans: 0, cat: "POWER SUPPLIES", exp: "Convenience outlets are wall receptacles providing connection points for appliances." },
+      { q: "What visual advantage does an analog multimeter pointer sweep offer over digital screens?", options: ["Shows exact 6-digit decimal values", "Ideal for spotting fluctuating signals, sweeping voltage changes, or unstable trends", "Requires no internal battery ever", "Eliminates all parallax error automatically"], ans: 1, cat: "MULTIMETER DIAGNOSTICS", exp: "The pointer needle visualization allows technicians to spot fluctuating signals and voltage trends." }
+    ];
+
+    let examState = {
+      questions: [],
+      answers: {},
+      currentIndex: 0,
+      timerSeconds: 1200, // 20 minutes
+      timerInterval: null
+    };
+
+    function startExam() {
+      playZap();
+      examState.questions = [...EXAM_QUESTIONS_POOL].sort(() => 0.5 - Math.random());
+      examState.answers = {};
+      examState.currentIndex = 0;
+      examState.timerSeconds = 1200;
+
+      document.getElementById('examStartScreen').classList.add('hidden');
+      document.getElementById('examResultScreen').classList.add('hidden');
+      document.getElementById('examLiveScreen').classList.remove('hidden');
+
+      renderPalette();
+      loadExamQuestion(0);
+
+      if (examState.timerInterval) clearInterval(examState.timerInterval);
+      examState.timerInterval = setInterval(updateExamTimer, 1000);
+    }
+
+    function updateExamTimer() {
+      examState.timerSeconds--;
+      const mins = Math.floor(examState.timerSeconds / 60);
+      const secs = examState.timerSeconds % 60;
+      document.getElementById('examTimer').innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+
+      if (examState.timerSeconds <= 0) {
+        clearInterval(examState.timerInterval);
+        submitExam();
+      }
+    }
+
+    function renderPalette() {
+      const palette = document.getElementById('questionPalette');
+      palette.innerHTML = '';
+      examState.questions.forEach((q, idx) => {
+        const btn = document.createElement('button');
+        btn.id = `palette-btn-${idx}`;
+        btn.onclick = () => loadExamQuestion(idx);
+        btn.className = "w-8 h-8 rounded font-tech text-xs font-bold transition-all bg-cyberBorder text-gray-400 hover:text-white";
+        btn.innerText = idx + 1;
+        palette.appendChild(btn);
+      });
+    }
+
+    function loadExamQuestion(idx) {
+      examState.currentIndex = idx;
+      const q = examState.questions[idx];
+
+      document.getElementById('examQIndex').innerText = `Question ${idx + 1} / ${examState.questions.length}`;
+      document.getElementById('examProgressBar').style.width = `${((idx + 1) / examState.questions.length) * 100}%`;
+      document.getElementById('examCategoryBadge').innerText = `CATEGORY: ${q.cat}`;
+      document.getElementById('examQuestionText').innerText = q.q;
+
+      const optsContainer = document.getElementById('examOptionsContainer');
+      optsContainer.innerHTML = '';
+
+      q.options.forEach((optText, optIdx) => {
+        const isSelected = examState.answers[idx] === optIdx;
+        const optBtn = document.createElement('button');
+        optBtn.className = `w-full p-3.5 rounded-xl border text-left text-xs md:text-sm font-tech transition-all flex items-center justify-between ${
+          isSelected ? 'bg-neonBlue/20 border-neonBlue text-neonBlue shadow-neon-blue' : 'bg-cyberDark border-cyberBorder text-gray-300 hover:border-gray-500'
+        }`;
+        optBtn.innerHTML = `
+          <div class="flex items-center gap-3">
+            <span class="w-6 h-6 rounded-full border border-cyberBorder flex items-center justify-center font-mono text-xs ${isSelected ? 'border-neonBlue text-neonBlue bg-black/40' : 'text-gray-500'}">${String.fromCharCode(65 + optIdx)}</span>
+            <span>${optText}</span>
+          </div>
+          <i class="${isSelected ? 'fa-solid fa-circle-check text-neonBlue' : 'fa-regular fa-circle text-gray-600'}"></i>
+        `;
+        optBtn.onclick = () => selectExamOption(idx, optIdx);
+        optsContainer.appendChild(optBtn);
+      });
+
+      // Update palette buttons highlights
+      examState.questions.forEach((_, pIdx) => {
+        const pBtn = document.getElementById(`palette-btn-${pIdx}`);
+        if (!pBtn) return;
+        const isAnswered = examState.answers[pIdx] !== undefined;
+        const isCurrent = pIdx === idx;
+
+        if (isCurrent) {
+          pBtn.className = "w-8 h-8 rounded font-tech text-xs font-bold bg-neonBlue text-black shadow-neon-blue";
+        } else if (isAnswered) {
+          pBtn.className = "w-8 h-8 rounded font-tech text-xs font-bold bg-neonGreen/20 border border-neonGreen text-neonGreen";
+        } else {
+          pBtn.className = "w-8 h-8 rounded font-tech text-xs font-bold bg-cyberBorder text-gray-400 hover:text-white";
+        }
+      });
+    }
+
+    function selectExamOption(qIdx, optIdx) {
+      playZap();
+      examState.answers[qIdx] = optIdx;
+      loadExamQuestion(qIdx);
+    }
+
+    function prevExamQuestion() {
+      if (examState.currentIndex > 0) loadExamQuestion(examState.currentIndex - 1);
+    }
+
+    function nextExamQuestion() {
+      if (examState.currentIndex < examState.questions.length - 1) {
+        loadExamQuestion(examState.currentIndex + 1);
+      }
+    }
+
+    function submitExam() {
+      playZap();
+      if (examState.timerInterval) clearInterval(examState.timerInterval);
+
+      let correctCount = 0;
+      examState.questions.forEach((q, idx) => {
+        if (examState.answers[idx] === q.ans) correctCount++;
+      });
+
+      const scorePct = Math.round((correctCount / examState.questions.length) * 100);
+      const passed = scorePct >= 75;
+
+      document.getElementById('examLiveScreen').classList.add('hidden');
+      document.getElementById('examResultScreen').classList.remove('hidden');
+
+      document.getElementById('examFinalScore').innerText = `${scorePct}%`;
+      document.getElementById('examStatCorrect').innerText = `${correctCount} / ${examState.questions.length}`;
+      document.getElementById('examStatAccuracy').innerText = `${scorePct}%`;
+      
+      const timeSpent = 1200 - examState.timerSeconds;
+      const tMins = Math.floor(timeSpent / 60);
+      const tSecs = timeSpent % 60;
+      document.getElementById('examStatTime').innerText = `${tMins.toString().padStart(2, '0')}:${tSecs.toString().padStart(2, '0')}`;
+
+      const rankBadge = document.getElementById('examRankBadgeContainer');
+      const rankTitle = document.getElementById('examRankTitle');
+      const subTitle = document.getElementById('examPassSubtitle');
+
+      if (scorePct >= 90) {
+        rankBadge.className = "w-20 h-20 rounded-full bg-neonGreen/10 border-2 border-neonGreen text-neonGreen flex items-center justify-center mx-auto text-3xl shadow-neon-green";
+        rankTitle.innerText = "MASTER ELECTRICIAN RANK";
+        subTitle.className = "text-xs text-neonGreen font-mono mt-1";
+        subTitle.innerText = "PASSED - OUTSTANDING TECHNICAL PROFICIENCY";
+      } else if (scorePct >= 75) {
+        rankBadge.className = "w-20 h-20 rounded-full bg-neonBlue/10 border-2 border-neonBlue text-neonBlue flex items-center justify-center mx-auto text-3xl shadow-neon-blue";
+        rankTitle.innerText = "JOURNEYMAN TECHNICIAN RANK";
+        subTitle.className = "text-xs text-neonBlue font-mono mt-1";
+        subTitle.innerText = "PASSED - QUALIFIED CONTROL OPERATOR";
+      } else {
+        rankBadge.className = "w-20 h-20 rounded-full bg-neonRed/10 border-2 border-neonRed text-neonRed flex items-center justify-center mx-auto text-3xl shadow-neon-red";
+        rankTitle.innerText = "APPRENTICE LEVEL (RETAKE SUGGESTED)";
+        subTitle.className = "text-xs text-neonRed font-mono mt-1";
+        subTitle.innerText = "FAILED - 75% PASS THRESHOLD REQUIRED";
+      }
+
+      // Populate Review Breakdown
+      const reviewContainer = document.getElementById('examReviewContainer');
+      reviewContainer.innerHTML = '';
+
+      examState.questions.forEach((q, idx) => {
+        const userAns = examState.answers[idx];
+        const isRight = userAns === q.ans;
+
+        const revItem = document.createElement('div');
+        revItem.className = "pt-3 space-y-1 text-xs";
+        revItem.innerHTML = `
+          <div class="flex items-start justify-between gap-2">
+            <span class="font-bold text-white font-tech">Q${idx + 1}: ${q.q}</span>
+            <span class="${isRight ? 'text-neonGreen' : 'text-neonRed'} font-mono font-bold shrink-0">
+              ${isRight ? '<i class="fa-solid fa-check"></i> Correct' : '<i class="fa-solid fa-xmark"></i> Incorrect'}
+            </span>
+          </div>
+          <div class="text-gray-400">
+            Your Answer: <span class="${isRight ? 'text-neonGreen' : 'text-neonRed'}">${userAns !== undefined ? q.options[userAns] : 'Not Answered'}</span>
+          </div>
+          ${!isRight ? `<div class="text-neonGreen">Correct Answer: ${q.options[q.ans]}</div>` : ''}
+          <p class="text-[11px] text-gray-500 italic mt-1">${q.exp}</p>
+        `;
+        reviewContainer.appendChild(revItem);
+      });
+    }
+
+    function restartExam() {
+      document.getElementById('examResultScreen').classList.add('hidden');
+      document.getElementById('examStartScreen').classList.remove('hidden');
+    }
+
+    function openCertificateModal() {
+      playZap();
+      const score = document.getElementById('examFinalScore').innerText;
+      document.getElementById('certScoreText').innerText = score;
+      document.getElementById('certRankText').innerText = document.getElementById('examRankTitle').innerText;
+      document.getElementById('certDateText').innerText = new Date().toISOString().split('T')[0];
+      document.getElementById('certModal').classList.remove('hidden');
+    }
+
+    function closeCertModal() {
+      document.getElementById('certModal').classList.add('hidden');
+    }
+
+    /* ==========================================================================
+       MODULE 5: CIRCUIT WIRE & SYMBOL MATCHING GAME
+       ========================================================================== */
+    const MATCH_PAIRS_MASTER = [
+      { term: "BANANA JACK", match: "Single-wire electrical connector for equipment wires" },
+      { term: "RED PILOT LAMP", match: "Emergency, danger, failure, or stop condition" },
+      { term: "GREEN PUSH BUTTON", match: "Normally Open (NO) Start / Go command" },
+      { term: "FUSE FILAMENT", match: "Melts to break circuit on excessive amperage" },
+      { term: "MULTIMETER MIRROR", match: "Eliminates Parallax Error by hiding reflection" },
+      { term: "DC AMMETER (DCA)", match: "Connected in SERIES to measure current flow" },
+      { term: "MAGNETIC CONTACTOR", match: "Heavy-duty power switch with A1/A2 coils" },
+      { term: "FLUORESCENT BALLAST", match: "Strikes initial high-voltage arc spike" }
+    ];
+
+    let matchCards = [];
+    let flippedCards = [];
+    let matchedPairsCount = 0;
+    let matchMoveCount = 0;
+
+    function initMatchingGame() {
+      playZap();
+      matchedPairsCount = 0;
+      matchMoveCount = 0;
+      flippedCards = [];
+
+      document.getElementById('matchMoves').innerText = '0';
+      document.getElementById('matchPairs').innerText = '0 / 6';
+
+      // Pick 6 random pairs
+      const selected = [...MATCH_PAIRS_MASTER].sort(() => 0.5 - Math.random()).slice(0, 6);
+      
+      let deck = [];
+      selected.forEach((pair, idx) => {
+        deck.push({ id: idx, text: pair.term, type: 'term' });
+        deck.push({ id: idx, text: pair.match, type: 'match' });
+      });
+
+      deck.sort(() => 0.5 - Math.random());
+      matchCards = deck;
+
+      const grid = document.getElementById('matchGrid');
+      grid.innerHTML = '';
+
+      deck.forEach((card, index) => {
+        const cardEl = document.createElement('div');
+        cardEl.className = "match-card h-32 bg-cyberCard border border-cyberBorder hover:border-neonBlue rounded-xl p-3 flex items-center justify-center text-center cursor-pointer transition-all duration-300 relative select-none";
+        cardEl.dataset.index = index;
+        cardEl.innerHTML = `
+          <div class="card-inner w-full h-full flex flex-col items-center justify-center space-y-2">
+            <div class="card-front text-neonBlue"><i class="fa-solid fa-bolt text-2xl animate-pulse"></i></div>
+            <div class="card-back hidden text-xs font-tech font-semibold text-white leading-snug">${card.text}</div>
+          </div>
+        `;
+        cardEl.onclick = () => flipMatchCard(index, cardEl);
+        grid.appendChild(cardEl);
+      });
+    }
+
+    function flipMatchCard(index, cardEl) {
+      if (flippedCards.length >= 2 || cardEl.classList.contains('matched') || cardEl.classList.contains('flipped')) return;
+
+      playZap();
+      cardEl.classList.add('flipped', 'border-neonBlue', 'bg-neonBlue/10');
+      cardEl.querySelector('.card-front').classList.add('hidden');
+      cardEl.querySelector('.card-back').classList.remove('hidden');
+
+      flippedCards.push({ index, card: matchCards[index], element: cardEl });
+
+      if (flippedCards.length === 2) {
+        matchMoveCount++;
+        document.getElementById('matchMoves').innerText = matchMoveCount;
+        checkMatch();
+      }
+    }
+
+    function checkMatch() {
+      const [c1, c2] = flippedCards;
+      if (c1.card.id === c2.card.id) {
+        // Match found
+        playCorrectSound();
+        c1.element.classList.add('matched', 'border-neonGreen', 'bg-neonGreen/20');
+        c2.element.classList.add('matched', 'border-neonGreen', 'bg-neonGreen/20');
+        matchedPairsCount++;
+        document.getElementById('matchPairs').innerText = `${matchedPairsCount} / 6`;
+        flippedCards = [];
+
+        if (matchedPairsCount === 6) {
+          setTimeout(() => {
+            alert(`⚡ EXCELLENT CIRCUIT MATCHING! Completed in ${matchMoveCount} moves!`);
+          }, 300);
+        }
+      } else {
+        // No match
+        playWrongSound();
+        c1.element.classList.add('border-neonRed', 'bg-neonRed/20');
+        c2.element.classList.add('border-neonRed', 'bg-neonRed/20');
+
+        setTimeout(() => {
+          c1.element.classList.remove('flipped', 'border-neonBlue', 'border-neonRed', 'bg-neonBlue/10', 'bg-neonRed/20');
+          c2.element.classList.remove('flipped', 'border-neonBlue', 'border-neonRed', 'bg-neonBlue/10', 'bg-neonRed/20');
+          c1.element.querySelector('.card-front').classList.remove('hidden');
+          c1.element.querySelector('.card-back').classList.add('hidden');
+          c2.element.querySelector('.card-front').classList.remove('hidden');
+          c2.element.querySelector('.card-back').classList.add('hidden');
+          flippedCards = [];
+        }, 900);
+      }
+    }
+
+    /* ==========================================================================
+       CANVAS BACKGROUND ELECTRIC ANIMATION
+       ========================================================================== */
+    function initElectricCanvas() {
+      const canvas = document.getElementById('electricCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+
+      function resize() {
+        canvas.width = canvas.parentElement.clientWidth;
+        canvas.height = canvas.parentElement.clientHeight;
+      }
+      resize();
+      window.addEventListener('resize', resize);
+
+      let sparks = [];
+
+      function createSpark() {
+        sparks.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          length: Math.random() * 40 + 10,
+          angle: Math.random() * Math.PI * 2,
+          life: 1,
+          decay: Math.random() * 0.05 + 0.02
+        });
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        if (Math.random() < 0.3) createSpark();
+
+        for (let i = sparks.length - 1; i >= 0; i--) {
+          const s = sparks[i];
+          ctx.beginPath();
+          ctx.moveTo(s.x, s.y);
+          const endX = s.x + Math.cos(s.angle) * s.length;
+          const endY = s.y + Math.sin(s.angle) * s.length;
+          ctx.lineTo(endX, endY);
+          ctx.strokeStyle = `rgba(0, 243, 255, ${s.life})`;
+          ctx.lineWidth = 1.5;
+          ctx.shadowColor = '#00f3ff';
+          ctx.shadowBlur = 8;
+          ctx.stroke();
+
+          s.life -= s.decay;
+          if (s.life <= 0) sparks.splice(i, 1);
+        }
+
+        requestAnimationFrame(draw);
+      }
+
+      draw();
+    }
+
+    /* ==========================================================================
+       WINDOW ONLOAD INITIALIZATION
+       ========================================================================== */
+    window.onload = function() {
+      renderExplorerComponents();
+      initMultimeterHotspots();
+      initElectricCanvas();
+    };
+  </script>
+</body>
+</html>
